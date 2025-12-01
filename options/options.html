@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Helper - 설정</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="options-container">
+        <header class="options-header">
+            <h1>📚 Reference Helper 설정</h1>
+        </header>
+
+        <div class="options-body">
+            <!-- General Settings -->
+            <section class="settings-section">
+                <h2>일반 설정</h2>
+
+                <div class="setting-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="trackCopy">
+                        <span>복사 이벤트 추적</span>
+                    </label>
+                    <p class="setting-description">페이지에서 텍스트 복사 시 자동으로 복사 기록에 저장합니다.</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="trackVisit">
+                        <span>방문 페이지 추적</span>
+                    </label>
+                    <p class="setting-description">20초 이상 머문 페이지를 자동으로 방문 기록에 저장합니다.</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="autoOpenPopup">
+                        <span>글 작성 페이지에서 팝업 자동 열기</span>
+                    </label>
+                    <p class="setting-description">블로그 글쓰기 페이지 방문 시 팝업을 자동으로 엽니다.</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="autoNumbering">
+                        <span>자동 번호 매기기</span>
+                    </label>
+                    <p class="setting-description">참고 목록에 자동으로 번호를 매깁니다 (1, 2, 3, ...).</p>
+                </div>
+            </section>
+
+            <!-- Visit Tracking Settings -->
+            <section class="settings-section">
+                <h2>방문 추적 설정</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">방문 기록 보관 기간 (일)</label>
+                    <p class="setting-description">방문 기록을 보관할 기간 (1-90일)</p>
+                    <input type="number" id="visitHistoryDays" min="1" max="90" class="template-input"
+                        style="width: 100px;" />
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">제외할 도메인 패턴</label>
+                    <p class="setting-description">방문 기록에서 제외할 도메인 패턴 (한 줄에 하나씩, 예: *.amazon.com, *.shopping.*)</p>
+                    <textarea id="excludedDomains" class="template-input" rows="4"
+                        placeholder="*.example.com&#10;localhost&#10;*.shopping.*"></textarea>
+                    <p class="setting-description" style="margin-top: 8px; font-size: 12px; color: #999;">
+                        💡 20초 이상 머문 페이지만 자동으로 방문 기록에 저장됩니다. localhost, chrome:// 등은 자동 제외됩니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Template Settings -->
+            <section class="settings-section">
+                <h2>마크다운 템플릿</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">리스트 템플릿</label>
+                    <p class="setting-description">전체 참고 목록 형식 ({{items}} 플레이스홀더 사용)</p>
+                    <textarea id="markdownTemplate" class="template-input" rows="4"></textarea>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">항목 템플릿</label>
+                    <p class="setting-description">개별 참고 항목 형식 ({{number}}, {{title}}, {{url}}, {{selectedText}} 플레이스홀더
+                        사용)</p>
+                    <textarea id="markdownItemTemplate" class="template-input" rows="2"></textarea>
+                </div>
+            </section>
+
+            <!-- HTML Template Settings -->
+            <section class="settings-section">
+                <h2>HTML 템플릿</h2>
+
+                <div class="setting-item">
+                    <label class="setting-label">리스트 템플릿</label>
+                    <textarea id="htmlTemplate" class="template-input" rows="4"></textarea>
+                </div>
+
+                <div class="setting-item">
+                    <label class="setting-label">항목 템플릿</label>
+                    <textarea id="htmlItemTemplate" class="template-input" rows="2"></textarea>
+                </div>
+            </section>
+
+            <!-- Data Management -->
+            <section class="settings-section">
+                <h2>데이터 관리</h2>
+
+                <div class="setting-item">
+                    <button id="exportDataBtn" class="btn-secondary">📤 데이터 내보내기 (JSON)</button>
+                    <p class="setting-description">모든 참고 목록과 설정을 JSON 파일로 내보내기</p>
+                </div>
+
+                <div class="setting-item">
+                    <button id="importDataBtn" class="btn-secondary">📥 데이터 가져오기 (JSON)</button>
+                    <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                    <p class="setting-description">백업된 JSON 파일에서 데이터 가져오기</p>
+                </div>
+
+                <div class="setting-item">
+                    <button id="clearDataBtn" class="btn-danger">🗑️ 모든 데이터 삭제</button>
+                    <p class="setting-description">⚠️ 주의: 모든 참고 목록과 설정이 삭제됩니다</p>
+                </div>
+            </section>
+        </div>
+
+        <footer class="options-footer">
+            <button id="saveBtn" class="btn-primary">💾 설정 저장</button>
+            <button id="resetBtn" class="btn-secondary">🔄 기본값으로 재설정</button>
+        </footer>
+
+        <!-- Toast notification -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+
+</html>

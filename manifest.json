@@ -1,0 +1,96 @@
+{
+    "manifest_version": 3,
+    "name": "Reference Helper",
+    "version": "1.0.0",
+    "description": "블로그 글 작성 시 참고 자료를 효율적으로 관리하고 자동 삽입하는 도구",
+    "permissions": [
+        "storage",
+        "contextMenus",
+        "tabs",
+        "clipboardWrite",
+        "activeTab"
+    ],
+    "background": {
+        "service_worker": "background/service-worker.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "utils/dom-helpers.js",
+                "utils/url-helpers.js",
+                "content-scripts/capture-handler.js",
+                "content-scripts/visit-tracker.js"
+            ],
+            "css": [
+                "styles/common.css"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "js": [
+                "content-scripts/editor-integration.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ],
+            "exclude_matches": [
+                "*://chrome.google.com/*"
+            ],
+            "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://*.tistory.com/manage/newpost*",
+                "https://velog.io/write*",
+                "https://velog.io/@*/edit/*",
+                "https://brunch.co.kr/@@*/write*",
+                "https://medium.com/p/*/edit*",
+                "https://medium.com/new-story*"
+            ],
+            "js": [
+                "content-scripts/writing-page-detector.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_icon": {
+            "16": "icons/icon-16.png",
+            "48": "icons/icon-48.png",
+            "128": "icons/icon-128.png"
+        }
+    },
+    "icons": {
+        "16": "icons/icon-16.png",
+        "48": "icons/icon-48.png",
+        "128": "icons/icon-128.png"
+    },
+    "options_page": "options/options.html",
+    "commands": {
+        "add-to-references": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+E",
+                "mac": "Command+Shift+E"
+            },
+            "description": "현재 페이지를 참고 목록에 추가"
+        },
+        "open-popup": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+P",
+                "mac": "Command+Shift+P"
+            },
+            "description": "Reference Helper 팝업 열기"
+        },
+        "paste-references": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+L",
+                "mac": "Command+Shift+L"
+            },
+            "description": "참고 목록 붙여넣기"
+        }
+    }
+}

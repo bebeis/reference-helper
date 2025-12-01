@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Helper</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="popup-container">
+        <!-- Header -->
+        <div class="popup-header">
+            <h1 class="popup-title">📚 Reference Helper</h1>
+            <button id="settingsBtn" class="icon-btn" title="설정">⚙️</button>
+        </div>
+
+        <!-- List Selector -->
+        <div class="list-selector">
+            <select id="listSelect" class="list-dropdown">
+                <option value="default">기본 목록</option>
+            </select>
+            <button id="setDefaultBtn" class="icon-btn icon-btn-star" title="기본 목록으로 설정">⭐</button>
+            <button id="newListBtn" class="icon-btn" title="새 목록 만들기">+</button>
+            <button id="deleteListBtn" class="icon-btn icon-btn-danger" title="현재 목록 삭제">🗑️</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="참고 자료 검색..." class="search-input">
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="list">
+                내 목록 <span id="listCount" class="badge">0</span>
+            </button>
+            <button class="tab" data-tab="visit">
+                방문 기록 <span id="visitCount" class="badge">0</span>
+            </button>
+            <button class="tab" data-tab="copy">
+                복사 기록 <span id="copyCount" class="badge">0</span>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- List Tab -->
+            <div id="listTab" class="tab-content active">
+                <div id="listItems" class="items-container"></div>
+            </div>
+
+            <!-- Visit History Tab -->
+            <div id="visitTab" class="tab-content">
+                <div id="visitItems" class="items-container"></div>
+            </div>
+
+            <!-- Copy History Tab -->
+            <div id="copyTab" class="tab-content">
+                <div id="copyItems" class="items-container"></div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="footer-actions">
+            <button id="addCurrentPageBtn" class="btn-add-current">
+                📌 현재 페이지 추가
+            </button>
+            <div class="export-buttons">
+                <button id="exportMarkdownBtn" class="btn-export btn-markdown">📝 Markdown 복사</button>
+                <button id="exportHTMLBtn" class="btn-export btn-html">🌐 HTML 복사</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="newListModal" class="modal">
+        <div class="modal-content">
+            <h2>새 목록 만들기</h2>
+            <input type="text" id="newListInput" placeholder="목록 이름" class="modal-input">
+            <div class="modal-actions">
+                <button id="createListBtn" class="btn-primary">생성</button>
+                <button id="cancelListBtn" class="btn-secondary">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
