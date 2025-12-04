@@ -52,6 +52,39 @@
                 </div>
             </section>
 
+            <!-- Copy History Security Settings -->
+            <section class="settings-section">
+                <h2>🔒 복사 이력 보안</h2>
+
+                <div class="setting-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="filterSensitiveData">
+                        <span>민감 정보 자동 필터링</span>
+                    </label>
+                    <p class="setting-description">API 키, 토큰, 비밀번호, 신용카드 번호 등이 감지되면 복사 이력에 저장하지 않습니다.</p>
+                </div>
+
+                <div class="setting-item">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="notifySensitiveDataFiltered">
+                        <span>민감 정보 필터링 시 알림 표시</span>
+                    </label>
+                    <p class="setting-description">민감 정보가 필터링될 때마다 알림을 표시합니다 (선택사항).</p>
+                </div>
+
+                <div class="setting-item">
+                    <button id="clearCopyHistoryBtn" class="btn-secondary">🗑️ 복사 이력 전체 삭제</button>
+                    <p class="setting-description">저장된 모든 복사 이력을 삭제합니다 (복구 불가능).</p>
+                </div>
+
+                <div class="setting-item"
+                    style="background-color: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0; font-size: 13px; color: #856404;">
+                        ⚠️ <strong>보안 권장사항</strong>: 민감한 정보를 자주 다루는 경우, "복사 이벤트 추적"을 비활성화하는 것을 권장합니다.
+                    </p>
+                </div>
+            </section>
+
             <!-- Visit Tracking Settings -->
             <section class="settings-section">
                 <h2>방문 추적 설정</h2>

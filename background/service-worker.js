@@ -30,8 +30,10 @@ chrome.runtime.onInstalled.addListener(async () => {
                 markdownItemTemplate: '{{number}}. [{{title}}]({{url}}){{#selectedText}} - "{{selectedText}}"{{/selectedText}}',
                 htmlItemTemplate: '<li><a href="{{url}}">{{title}}</a>{{#selectedText}} - "{{selectedText}}"{{/selectedText}}</li>',
                 autoNumbering: true,
-                trackCopy: true,
+                trackCopy: false,  // Changed to false for security (was true)
                 trackVisit: true,
+                filterSensitiveData: true,  // Filter sensitive data from copy history
+                notifySensitiveDataFiltered: false,  // Optionally notify when sensitive data is filtered
                 showBlogPopup: false,  // Popup feature removed
                 autoOpenPopup: true,  // Auto-open popup on writing pages
                 excludedDomains: [],  // Patterns like '*.amazon.com', '*.shopping.*'
