@@ -90,6 +90,9 @@ function setupEventListeners() {
             await createList();
         }
     });
+
+    // Batch controls event listeners
+    setupBatchControlListeners();
 }
 
 // Load lists into dropdown
@@ -156,6 +159,7 @@ async function loadListItems() {
       </div>
     `;
         document.getElementById('listCount').textContent = '0';
+        updateBatchControlsVisibility('list', false);
         return;
     }
 
@@ -173,8 +177,9 @@ async function loadListItems() {
 
     container.innerHTML = items.map(item => createItemCard(item, 'list')).join('');
 
-    // Attach event listeners
-    attachItemEventListeners(container);
+    // Show batch controls and attach event listeners
+    updateBatchControlsVisibility('list', items.length > 0);
+    attachItemEventListeners(container, 'list');
 }
 
 // Load visit history
@@ -190,6 +195,7 @@ async function loadVisitHistory() {
       </div>
     `;
         document.getElementById('visitCount').textContent = '0';
+        updateBatchControlsVisibility('visit', false);
         return;
     }
 
@@ -206,7 +212,8 @@ async function loadVisitHistory() {
 
     container.innerHTML = items.map(item => createItemCard(item, 'visit')).join('');
 
-    attachItemEventListeners(container);
+    updateBatchControlsVisibility('visit', items.length > 0);
+    attachItemEventListeners(container, 'visit');
 }
 
 // Load copy history
@@ -222,6 +229,7 @@ async function loadCopyHistory() {
       </div>
     `;
         document.getElementById('copyCount').textContent = '0';
+        updateBatchControlsVisibility('copy', false);
         return;
     }
 
@@ -239,7 +247,8 @@ async function loadCopyHistory() {
 
     container.innerHTML = items.map(item => createItemCard(item, 'copy')).join('');
 
-    attachItemEventListeners(container);
+    updateBatchControlsVisibility('copy', items.length > 0);
+    attachItemEventListeners(container, 'copy');
 }
 
 // Create item card HTML
@@ -275,6 +284,9 @@ function createItemCard(item, type) {
     return `
     <div class="item-card" data-id="${item.id}">
       <div class="item-header">
+        <div class="item-checkbox-container">
+          <input type="checkbox" class="item-checkbox" data-id="${item.id}" aria-label="${escapeHtml(item.title)} 선택">
+        </div>
         <img src="${faviconUrl}" class="item-favicon" onerror="this.style.display='none'">
         <div class="item-title">${escapeHtml(item.title)}</div>
       </div>
@@ -289,7 +301,18 @@ function createItemCard(item, type) {
 }
 
 // Attach event listeners to item cards
-function attachItemEventListeners(container) {
+function attachItemEventListeners(container, tabType) {
+    // Individual checkbox change listeners for batch delete
+    container.querySelectorAll('.item-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+            updateBatchDeleteButton(tabType);
+        });
+        // Prevent card click when clicking checkbox
+        cb.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
     // Delete buttons (list items)
     container.querySelectorAll('.item-delete').forEach(btn => {
         btn.addEventListener('click', async (e) => {
@@ -826,4 +849,161 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Batch control functions
+function setupBatchControlListeners() {
+    // List tab batch controls
+    document.getElementById('listSelectAll').addEventListener('change', (e) => {
+        toggleAllCheckboxes('listItems', e.target.checked);
+        updateBatchDeleteButton('list');
+    });
+
+    document.getElementById('listBatchDelete').addEventListener('click', async () => {
+        await batchDeleteListItems();
+    });
+
+    // Visit tab batch controls
+    document.getElementById('visitSelectAll').addEventListener('change', (e) => {
+        toggleAllCheckboxes('visitItems', e.target.checked);
+        updateBatchDeleteButton('visit');
+    });
+
+    document.getElementById('visitBatchDelete').addEventListener('click', async () => {
+        await batchDeleteVisitHistory();
+    });
+
+    // Copy tab batch controls
+    document.getElementById('copySelectAll').addEventListener('change', (e) => {
+        toggleAllCheckboxes('copyItems', e.target.checked);
+        updateBatchDeleteButton('copy');
+    });
+
+    document.getElementById('copyBatchDelete').addEventListener('click', async () => {
+        await batchDeleteCopyHistory();
+    });
+}
+
+// Toggle all checkboxes in a container
+function toggleAllCheckboxes(containerId, checked) {
+    const container = document.getElementById(containerId);
+    const checkboxes = container.querySelectorAll('.item-checkbox');
+    checkboxes.forEach(cb => cb.checked = checked);
+}
+
+// Update batch controls visibility based on item count
+function updateBatchControlsVisibility(tabType, hasItems) {
+    const controlsId = `${tabType}BatchControls`;
+    const controls = document.getElementById(controlsId);
+    if (controls) {
+        controls.classList.toggle('show', hasItems);
+        // Reset select all checkbox when hiding
+        if (!hasItems) {
+            const selectAllId = `${tabType}SelectAll`;
+            const selectAll = document.getElementById(selectAllId);
+            if (selectAll) selectAll.checked = false;
+        }
+    }
+}
+
+// Update batch delete button state
+function updateBatchDeleteButton(tabType) {
+    const containerId = `${tabType}Items`;
+    const container = document.getElementById(containerId);
+    const checkedCount = container.querySelectorAll('.item-checkbox:checked').length;
+
+    const buttonId = `${tabType}BatchDelete`;
+    const button = document.getElementById(buttonId);
+
+    if (button) {
+        button.disabled = checkedCount === 0;
+        if (checkedCount > 0) {
+            button.textContent = `🗑️ ${checkedCount}개 삭제`;
+        } else {
+            button.textContent = '🗑️ 선택 삭제';
+        }
+    }
+
+    // Update select all checkbox state
+    const allCheckboxes = container.querySelectorAll('.item-checkbox');
+    const selectAllId = `${tabType}SelectAll`;
+    const selectAll = document.getElementById(selectAllId);
+    if (selectAll && allCheckboxes.length > 0) {
+        selectAll.checked = checkedCount === allCheckboxes.length;
+        selectAll.indeterminate = checkedCount > 0 && checkedCount < allCheckboxes.length;
+    }
+}
+
+// Batch delete list items
+async function batchDeleteListItems() {
+    const container = document.getElementById('listItems');
+    const checkedBoxes = container.querySelectorAll('.item-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+
+    if (selectedIds.length === 0) return;
+
+    if (!confirm(`${selectedIds.length}개의 항목을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+    }
+
+    const { lists } = await chrome.storage.sync.get(['lists']);
+    const list = lists[currentListId];
+    if (!list) return;
+
+    list.items = list.items.filter(item => !selectedIds.includes(item.id));
+    lists[currentListId] = list;
+
+    await chrome.storage.sync.set({ lists });
+
+    document.getElementById('listSelectAll').checked = false;
+    await loadContent();
+    showNotification(`${selectedIds.length}개 항목이 삭제되었습니다`);
+}
+
+// Batch delete visit history
+async function batchDeleteVisitHistory() {
+    const container = document.getElementById('visitItems');
+    const checkedBoxes = container.querySelectorAll('.item-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+
+    if (selectedIds.length === 0) return;
+
+    if (!confirm(`${selectedIds.length}개의 방문 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+    }
+
+    let { visitHistory } = await chrome.storage.sync.get(['visitHistory']);
+    if (!visitHistory) return;
+    visitHistory = visitHistory.filter(item => !selectedIds.includes(item.id));
+
+    await chrome.storage.sync.set({ visitHistory });
+
+    document.getElementById('visitSelectAll').checked = false;
+    await loadAllCounts();
+    await loadContent();
+    showNotification(`${selectedIds.length}개 방문 기록이 삭제되었습니다`);
+}
+
+// Batch delete copy history
+async function batchDeleteCopyHistory() {
+    const container = document.getElementById('copyItems');
+    const checkedBoxes = container.querySelectorAll('.item-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+
+    if (selectedIds.length === 0) return;
+
+    if (!confirm(`${selectedIds.length}개의 복사 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+    }
+
+    let { copyHistory } = await chrome.storage.sync.get(['copyHistory']);
+    if (!copyHistory) return;
+    copyHistory = copyHistory.filter(item => !selectedIds.includes(item.id));
+
+    await chrome.storage.sync.set({ copyHistory });
+
+    document.getElementById('copySelectAll').checked = false;
+    await loadAllCounts();
+    await loadContent();
+    showNotification(`${selectedIds.length}개 복사 기록이 삭제되었습니다`);
 }
