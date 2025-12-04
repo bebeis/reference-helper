@@ -285,7 +285,7 @@ function createItemCard(item, type) {
     <div class="item-card" data-id="${item.id}">
       <div class="item-header">
         <div class="item-checkbox-container">
-          <input type="checkbox" class="item-checkbox" data-id="${item.id}">
+          <input type="checkbox" class="item-checkbox" data-id="${item.id}" aria-label="${escapeHtml(item.title)} 선택">
         </div>
         <img src="${faviconUrl}" class="item-favicon" onerror="this.style.display='none'">
         <div class="item-title">${escapeHtml(item.title)}</div>
@@ -942,7 +942,7 @@ async function batchDeleteListItems() {
 
     if (selectedIds.length === 0) return;
 
-    if (!confirm(`${selectedIds.length}개의 항목을 삭제하시겠습니까?`)) {
+    if (!confirm(`${selectedIds.length}개의 항목을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
         return;
     }
 
@@ -968,7 +968,7 @@ async function batchDeleteVisitHistory() {
 
     if (selectedIds.length === 0) return;
 
-    if (!confirm(`${selectedIds.length}개의 방문 기록을 삭제하시겠습니까?`)) {
+    if (!confirm(`${selectedIds.length}개의 방문 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
         return;
     }
 
@@ -992,7 +992,7 @@ async function batchDeleteCopyHistory() {
 
     if (selectedIds.length === 0) return;
 
-    if (!confirm(`${selectedIds.length}개의 복사 기록을 삭제하시겠습니까?`)) {
+    if (!confirm(`${selectedIds.length}개의 복사 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
         return;
     }
 
