@@ -178,7 +178,7 @@ async function loadListItems() {
     container.innerHTML = items.map(item => createItemCard(item, 'list')).join('');
 
     // Show batch controls and attach event listeners
-    updateBatchControlsVisibility('list', true);
+    updateBatchControlsVisibility('list', items.length > 0);
     attachItemEventListeners(container, 'list');
 }
 
@@ -212,7 +212,7 @@ async function loadVisitHistory() {
 
     container.innerHTML = items.map(item => createItemCard(item, 'visit')).join('');
 
-    updateBatchControlsVisibility('visit', true);
+    updateBatchControlsVisibility('visit', items.length > 0);
     attachItemEventListeners(container, 'visit');
 }
 
@@ -247,7 +247,7 @@ async function loadCopyHistory() {
 
     container.innerHTML = items.map(item => createItemCard(item, 'copy')).join('');
 
-    updateBatchControlsVisibility('copy', true);
+    updateBatchControlsVisibility('copy', items.length > 0);
     attachItemEventListeners(container, 'copy');
 }
 
@@ -948,6 +948,7 @@ async function batchDeleteListItems() {
 
     const { lists } = await chrome.storage.sync.get(['lists']);
     const list = lists[currentListId];
+    if (!list) return;
 
     list.items = list.items.filter(item => !selectedIds.includes(item.id));
     lists[currentListId] = list;
@@ -972,6 +973,7 @@ async function batchDeleteVisitHistory() {
     }
 
     let { visitHistory } = await chrome.storage.sync.get(['visitHistory']);
+    if (!visitHistory) return;
     visitHistory = visitHistory.filter(item => !selectedIds.includes(item.id));
 
     await chrome.storage.sync.set({ visitHistory });
@@ -995,6 +997,7 @@ async function batchDeleteCopyHistory() {
     }
 
     let { copyHistory } = await chrome.storage.sync.get(['copyHistory']);
+    if (!copyHistory) return;
     copyHistory = copyHistory.filter(item => !selectedIds.includes(item.id));
 
     await chrome.storage.sync.set({ copyHistory });
