@@ -54,7 +54,14 @@
                         <input type="checkbox" id="listSelectAll">
                         <span class="batch-label">전체 선택</span>
                     </label>
-                    <button id="listBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                    <div class="batch-actions">
+                        <button id="listBatchMove" class="btn-batch-action" disabled aria-label="선택한 항목 이동"
+                            title="선택한 항목을 다른 목록으로 이동">📁 이동</button>
+                        <button id="listBatchCopy" class="btn-batch-action" disabled aria-label="선택한 항목 복사"
+                            title="선택한 항목을 마크다운으로 복사">📋 복사</button>
+                        <button id="listBatchDelete" class="btn-batch-delete" disabled aria-label="선택한 항목 삭제"
+                            title="선택한 항목 삭제">🗑️ 삭제</button>
+                    </div>
                 </div>
                 <div id="listItems" class="items-container"></div>
             </div>
@@ -66,7 +73,12 @@
                         <input type="checkbox" id="visitSelectAll">
                         <span class="batch-label">전체 선택</span>
                     </label>
-                    <button id="visitBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                    <div class="batch-actions">
+                        <button id="visitBatchAdd" class="btn-batch-action btn-batch-add" disabled
+                            aria-label="선택한 항목 목록에 추가" title="선택한 항목을 현재 목록에 추가">➕ 목록에 추가</button>
+                        <button id="visitBatchDelete" class="btn-batch-delete" disabled aria-label="선택한 항목 삭제"
+                            title="선택한 방문 기록 삭제">🗑️ 삭제</button>
+                    </div>
                 </div>
                 <div id="visitItems" class="items-container"></div>
             </div>
@@ -78,7 +90,12 @@
                         <input type="checkbox" id="copySelectAll">
                         <span class="batch-label">전체 선택</span>
                     </label>
-                    <button id="copyBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                    <div class="batch-actions">
+                        <button id="copyBatchAdd" class="btn-batch-action btn-batch-add" disabled
+                            aria-label="선택한 항목 목록에 추가" title="선택한 항목을 현재 목록에 추가">➕ 목록에 추가</button>
+                        <button id="copyBatchDelete" class="btn-batch-delete" disabled aria-label="선택한 항목 삭제"
+                            title="선택한 복사 기록 삭제">🗑️ 삭제</button>
+                    </div>
                 </div>
                 <div id="copyItems" class="items-container"></div>
             </div>
