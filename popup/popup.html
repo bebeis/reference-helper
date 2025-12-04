@@ -49,16 +49,37 @@
         <div class="content-area">
             <!-- List Tab -->
             <div id="listTab" class="tab-content active">
+                <div class="batch-controls" id="listBatchControls">
+                    <label class="batch-checkbox-container">
+                        <input type="checkbox" id="listSelectAll">
+                        <span class="batch-label">전체 선택</span>
+                    </label>
+                    <button id="listBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                </div>
                 <div id="listItems" class="items-container"></div>
             </div>
 
             <!-- Visit History Tab -->
             <div id="visitTab" class="tab-content">
+                <div class="batch-controls" id="visitBatchControls">
+                    <label class="batch-checkbox-container">
+                        <input type="checkbox" id="visitSelectAll">
+                        <span class="batch-label">전체 선택</span>
+                    </label>
+                    <button id="visitBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                </div>
                 <div id="visitItems" class="items-container"></div>
             </div>
 
             <!-- Copy History Tab -->
             <div id="copyTab" class="tab-content">
+                <div class="batch-controls" id="copyBatchControls">
+                    <label class="batch-checkbox-container">
+                        <input type="checkbox" id="copySelectAll">
+                        <span class="batch-label">전체 선택</span>
+                    </label>
+                    <button id="copyBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                </div>
                 <div id="copyItems" class="items-container"></div>
             </div>
         </div>
