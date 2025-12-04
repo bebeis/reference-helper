@@ -7,63 +7,8 @@
     let lastCopyTime = 0;
     let isInternalCopy = false;  // Flag for internal operations
 
-    // Import sensitive data detector
-    const sensitiveDataDetector = {
-        isSensitiveData: function (text) {
-            if (!text || typeof text !== 'string') return false;
-            const normalized = text.trim();
-            if (normalized.length < 8) return false;
-
-            // Check for various sensitive patterns
-            return this.isApiKey(normalized) || this.isJwtToken(normalized) ||
-                this.isBearerToken(normalized) || this.isPassword(normalized) ||
-                this.isCreditCard(normalized) || this.isPrivateKey(normalized);
-        },
-        isApiKey: function (text) {
-            const patterns = [
-                /^sk-[a-zA-Z0-9]{20,}$/i, /^pk-[a-zA-Z0-9]{20,}$/i,
-                /^AIza[a-zA-Z0-9_-]{35,}$/, /^ya29\.[a-zA-Z0-9_-]{50,}$/,
-                /^[a-zA-Z0-9]{32,}$/, /^xox[baprs]-[a-zA-Z0-9-]{10,}$/,
-                /^ghp_[a-zA-Z0-9]{36,}$/, /^gho_[a-zA-Z0-9]{36,}$/,
-                /^github_pat_[a-zA-Z0-9]{22,}_[a-zA-Z0-9]{59}$/,
-                /^glpat-[a-zA-Z0-9_-]{20,}$/, /^AKIA[a-zA-Z0-9]{16}$/,
-                /^key-[a-zA-Z0-9]{32,}$/i, /^api[_-]?key[_-]?[a-zA-Z0-9]{16,}$/i,
-                /^secret[_-]?[a-zA-Z0-9]{16,}$/i
-            ];
-            return patterns.some(p => p.test(text));
-        },
-        isJwtToken: function (text) {
-            return /^eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/.test(text);
-        },
-        isBearerToken: function (text) {
-            return /^Bearer\s+[a-zA-Z0-9_\-\.=]+$/i.test(text);
-        },
-        isPassword: function (text) {
-            if (/\s/.test(text)) return false;
-            const hasUpper = /[A-Z]/.test(text);
-            const hasLower = /[a-z]/.test(text);
-            const hasNumber = /[0-9]/.test(text);
-            const hasSpecial = /[^a-zA-Z0-9]/.test(text);
-            const charTypes = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
-            return (charTypes >= 3 && text.length >= 10);
-        },
-        isCreditCard: function (text) {
-            const cleaned = text.replace(/[\s-]/g, '');
-            if (!/^\d{13,19}$/.test(cleaned)) return false;
-            // Luhn check
-            let sum = 0, isEven = false;
-            for (let i = cleaned.length - 1; i >= 0; i--) {
-                let digit = parseInt(cleaned[i], 10);
-                if (isEven) { digit *= 2; if (digit > 9) digit -= 9; }
-                sum += digit; isEven = !isEven;
-            }
-            return sum % 10 === 0;
-        },
-        isPrivateKey: function (text) {
-            return /-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----/i.test(text) ||
-                /-----BEGIN\s+OPENSSH\s+PRIVATE\s+KEY-----/i.test(text);
-        }
-    };
+    // Sensitive data detector is loaded from utils/sensitive-data-detector.js via manifest.json
+    // Uses global isSensitiveData() function
 
     // Listen for internal copy operations
     document.addEventListener('ref-helper-internal-copy', () => {
@@ -108,7 +53,7 @@
         if (!copiedText) return;
 
         // Check if text contains sensitive information
-        if (settings.filterSensitiveData !== false && sensitiveDataDetector.isSensitiveData(copiedText)) {
+        if (settings.filterSensitiveData !== false && isSensitiveData(copiedText)) {
             // Don't save sensitive data to copy history
             console.log('[Reference Helper] Sensitive data detected, not saving to copy history');
             // Optionally show a subtle notification (can be enabled in settings)

@@ -21,6 +21,7 @@
             "js": [
                 "utils/dom-helpers.js",
                 "utils/url-helpers.js",
+                "utils/sensitive-data-detector.js",
                 "content-scripts/capture-handler.js",
                 "content-scripts/visit-tracker.js"
             ],
