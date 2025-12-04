@@ -1123,6 +1123,7 @@ async function batchMoveListItems() {
     await chrome.storage.sync.set({ lists });
 
     document.getElementById('listSelectAll').checked = false;
+    await loadAllCounts();
     await loadContent();
     showNotification(`${movedItems.length}개 항목을 "${targetListName}"(으)로 이동했습니다`);
 }
@@ -1193,24 +1194,23 @@ async function batchAddToList(historyType) {
     let addedCount = 0;
     let duplicateCount = 0;
 
-    for (const item of selectedItems) {
-        // Check for duplicates across ALL lists
-        let isDuplicate = false;
-
-        for (const list of Object.values(lists)) {
-            if (list.items && list.items.some(i => i.url === item.url)) {
-                isDuplicate = true;
-                break;
-            }
+    // Build a Set of existing URLs for O(n+m) duplicate checking
+    const existingUrls = new Set();
+    for (const list of Object.values(lists)) {
+        if (list.items) {
+            list.items.forEach(i => existingUrls.add(i.url));
         }
+    }
 
-        if (isDuplicate) {
+    for (const item of selectedItems) {
+        // Check for duplicates using Set (O(1) lookup)
+        if (existingUrls.has(item.url)) {
             duplicateCount++;
             continue;
         }
 
         const newItem = {
-            id: crypto.randomUUID(),
+            id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
             title: item.title,
             url: item.url,
             selectedText: item.selectedText || '',
@@ -1219,6 +1219,7 @@ async function batchAddToList(historyType) {
         };
 
         lists[currentListId].items.push(newItem);
+        existingUrls.add(item.url); // Prevent duplicates within this batch
         addedCount++;
     }
 
