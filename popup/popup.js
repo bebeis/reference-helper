@@ -1071,6 +1071,9 @@ async function batchMoveListItems() {
 
     const { lists } = await chrome.storage.sync.get(['lists']);
 
+    // Validate current list exists
+    if (!lists[currentListId]?.items) return;
+
     // Get other lists (exclude current list)
     const otherLists = Object.entries(lists).filter(([id]) => id !== currentListId);
 
@@ -1096,6 +1099,12 @@ async function batchMoveListItems() {
 
     const targetListId = otherLists[index][0];
     const targetListName = otherLists[index][1].name;
+
+    // Validate target list exists
+    if (!lists[targetListId]?.items) {
+        showNotification('대상 목록을 찾을 수 없습니다');
+        return;
+    }
 
     // Move items
     const sourceList = lists[currentListId];
@@ -1128,7 +1137,7 @@ async function batchCopyListItems() {
 
     const { lists, settings } = await chrome.storage.sync.get(['lists', 'settings']);
     const list = lists[currentListId];
-    if (!list) return;
+    if (!list?.items) return;
 
     const selectedItems = list.items.filter(item => selectedIds.includes(item.id));
 
@@ -1153,6 +1162,12 @@ async function batchCopyListItems() {
     }).join('\n');
 
     await navigator.clipboard.writeText(markdownItems);
+
+    // Reset selection for consistency with other batch operations
+    document.getElementById('listSelectAll').checked = false;
+    container.querySelectorAll('.item-checkbox:checked').forEach(cb => cb.checked = false);
+    updateBatchButtons('list');
+
     showNotification(`${selectedItems.length}개 항목을 클립보드에 복사했습니다`);
 }
 
@@ -1170,20 +1185,21 @@ async function batchAddToList(historyType) {
 
     if (!history || !lists) return;
 
+    // Validate current list exists
+    if (!lists[currentListId]?.items) return;
+
     const selectedItems = history.filter(item => selectedIds.includes(item.id));
 
     let addedCount = 0;
     let duplicateCount = 0;
-    const duplicateListNames = new Set();
 
     for (const item of selectedItems) {
         // Check for duplicates across ALL lists
         let isDuplicate = false;
 
-        for (const [listId, list] of Object.entries(lists)) {
+        for (const list of Object.values(lists)) {
             if (list.items && list.items.some(i => i.url === item.url)) {
                 isDuplicate = true;
-                duplicateListNames.add(list.name);
                 break;
             }
         }
@@ -1194,7 +1210,7 @@ async function batchAddToList(historyType) {
         }
 
         const newItem = {
-            id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+            id: crypto.randomUUID(),
             title: item.title,
             url: item.url,
             selectedText: item.selectedText || '',
@@ -1215,7 +1231,7 @@ async function batchAddToList(historyType) {
     updateBatchButtons(historyType);
 
     // Show notification
-    const listName = lists[currentListId].name;
+    const listName = lists[currentListId]?.name || '목록';
     if (addedCount > 0 && duplicateCount > 0) {
         showNotification(`✓ ${addedCount}개 추가됨, ⚠️ ${duplicateCount}개 중복`);
     } else if (addedCount > 0) {
