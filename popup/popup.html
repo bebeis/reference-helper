@@ -54,7 +54,11 @@
                         <input type="checkbox" id="listSelectAll">
                         <span class="batch-label">전체 선택</span>
                     </label>
-                    <button id="listBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                    <div class="batch-actions">
+                        <button id="listBatchMove" class="btn-batch-action" disabled>📁 이동</button>
+                        <button id="listBatchCopy" class="btn-batch-action" disabled>📋 복사</button>
+                        <button id="listBatchDelete" class="btn-batch-delete" disabled>🗑️ 삭제</button>
+                    </div>
                 </div>
                 <div id="listItems" class="items-container"></div>
             </div>
@@ -66,7 +70,10 @@
                         <input type="checkbox" id="visitSelectAll">
                         <span class="batch-label">전체 선택</span>
                     </label>
-                    <button id="visitBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                    <div class="batch-actions">
+                        <button id="visitBatchAdd" class="btn-batch-action btn-batch-add" disabled>➕ 목록에 추가</button>
+                        <button id="visitBatchDelete" class="btn-batch-delete" disabled>🗑️ 삭제</button>
+                    </div>
                 </div>
                 <div id="visitItems" class="items-container"></div>
             </div>
@@ -78,7 +85,10 @@
                         <input type="checkbox" id="copySelectAll">
                         <span class="batch-label">전체 선택</span>
                     </label>
-                    <button id="copyBatchDelete" class="btn-batch-delete" disabled>🗑️ 선택 삭제</button>
+                    <div class="batch-actions">
+                        <button id="copyBatchAdd" class="btn-batch-action btn-batch-add" disabled>➕ 목록에 추가</button>
+                        <button id="copyBatchDelete" class="btn-batch-delete" disabled>🗑️ 삭제</button>
+                    </div>
                 </div>
                 <div id="copyItems" class="items-container"></div>
             </div>

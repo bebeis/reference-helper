@@ -593,6 +593,43 @@ display: flex;
   opacity: 0.7;
 }
 
+/* Batch Actions Container */
+.batch-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-batch-action {
+  padding: 6px 10px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-batch-action:hover:not(:disabled) {
+  background: #5568d3;
+  transform: scale(1.02);
+}
+
+.btn-batch-action:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-batch-add {
+  background: #27ae60;
+}
+
+.btn-batch-add:hover:not(:disabled) {
+  background: #229954;
+}
+
 /* Item Checkbox */
 .item-checkbox-container {
   display: flex;

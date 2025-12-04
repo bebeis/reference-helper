@@ -305,7 +305,7 @@ function attachItemEventListeners(container, tabType) {
     // Individual checkbox change listeners for batch delete
     container.querySelectorAll('.item-checkbox').forEach(cb => {
         cb.addEventListener('change', () => {
-            updateBatchDeleteButton(tabType);
+            updateBatchButtons(tabType);
         });
         // Prevent card click when clicking checkbox
         cb.addEventListener('click', (e) => {
@@ -856,7 +856,15 @@ function setupBatchControlListeners() {
     // List tab batch controls
     document.getElementById('listSelectAll').addEventListener('change', (e) => {
         toggleAllCheckboxes('listItems', e.target.checked);
-        updateBatchDeleteButton('list');
+        updateBatchButtons('list');
+    });
+
+    document.getElementById('listBatchMove').addEventListener('click', async () => {
+        await batchMoveListItems();
+    });
+
+    document.getElementById('listBatchCopy').addEventListener('click', async () => {
+        await batchCopyListItems();
     });
 
     document.getElementById('listBatchDelete').addEventListener('click', async () => {
@@ -866,7 +874,11 @@ function setupBatchControlListeners() {
     // Visit tab batch controls
     document.getElementById('visitSelectAll').addEventListener('change', (e) => {
         toggleAllCheckboxes('visitItems', e.target.checked);
-        updateBatchDeleteButton('visit');
+        updateBatchButtons('visit');
+    });
+
+    document.getElementById('visitBatchAdd').addEventListener('click', async () => {
+        await batchAddToList('visit');
     });
 
     document.getElementById('visitBatchDelete').addEventListener('click', async () => {
@@ -876,7 +888,11 @@ function setupBatchControlListeners() {
     // Copy tab batch controls
     document.getElementById('copySelectAll').addEventListener('change', (e) => {
         toggleAllCheckboxes('copyItems', e.target.checked);
-        updateBatchDeleteButton('copy');
+        updateBatchButtons('copy');
+    });
+
+    document.getElementById('copyBatchAdd').addEventListener('click', async () => {
+        await batchAddToList('copy');
     });
 
     document.getElementById('copyBatchDelete').addEventListener('click', async () => {
@@ -906,21 +922,58 @@ function updateBatchControlsVisibility(tabType, hasItems) {
     }
 }
 
-// Update batch delete button state
-function updateBatchDeleteButton(tabType) {
+// Update batch buttons state
+function updateBatchButtons(tabType) {
     const containerId = `${tabType}Items`;
     const container = document.getElementById(containerId);
     const checkedCount = container.querySelectorAll('.item-checkbox:checked').length;
 
-    const buttonId = `${tabType}BatchDelete`;
-    const button = document.getElementById(buttonId);
+    // Update delete button
+    const deleteButtonId = `${tabType}BatchDelete`;
+    const deleteButton = document.getElementById(deleteButtonId);
 
-    if (button) {
-        button.disabled = checkedCount === 0;
+    if (deleteButton) {
+        deleteButton.disabled = checkedCount === 0;
         if (checkedCount > 0) {
-            button.textContent = `🗑️ ${checkedCount}개 삭제`;
+            deleteButton.textContent = `🗑️ ${checkedCount}개 삭제`;
         } else {
-            button.textContent = '🗑️ 선택 삭제';
+            deleteButton.textContent = '🗑️ 삭제';
+        }
+    }
+
+    // Update move button (list tab only)
+    if (tabType === 'list') {
+        const moveButton = document.getElementById('listBatchMove');
+        if (moveButton) {
+            moveButton.disabled = checkedCount === 0;
+            if (checkedCount > 0) {
+                moveButton.textContent = `📁 ${checkedCount}개 이동`;
+            } else {
+                moveButton.textContent = '📁 이동';
+            }
+        }
+
+        const copyButton = document.getElementById('listBatchCopy');
+        if (copyButton) {
+            copyButton.disabled = checkedCount === 0;
+            if (checkedCount > 0) {
+                copyButton.textContent = `📋 ${checkedCount}개 복사`;
+            } else {
+                copyButton.textContent = '📋 복사';
+            }
+        }
+    }
+
+    // Update add button (visit/copy tabs)
+    if (tabType === 'visit' || tabType === 'copy') {
+        const addButton = document.getElementById(`${tabType}BatchAdd`);
+        if (addButton) {
+            addButton.disabled = checkedCount === 0;
+            if (checkedCount > 0) {
+                addButton.textContent = `➕ ${checkedCount}개 추가`;
+            } else {
+                addButton.textContent = '➕ 목록에 추가';
+            }
         }
     }
 
@@ -1006,4 +1059,172 @@ async function batchDeleteCopyHistory() {
     await loadAllCounts();
     await loadContent();
     showNotification(`${selectedIds.length}개 복사 기록이 삭제되었습니다`);
+}
+
+// Batch move list items to another list
+async function batchMoveListItems() {
+    const container = document.getElementById('listItems');
+    const checkedBoxes = container.querySelectorAll('.item-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+
+    if (selectedIds.length === 0) return;
+
+    const { lists } = await chrome.storage.sync.get(['lists']);
+
+    // Get other lists (exclude current list)
+    const otherLists = Object.entries(lists).filter(([id]) => id !== currentListId);
+
+    if (otherLists.length === 0) {
+        showNotification('이동할 다른 목록이 없습니다');
+        return;
+    }
+
+    // Create simple dialog
+    const result = prompt(
+        `${selectedIds.length}개 항목을 이동할 목록을 선택하세요:\n\n` +
+        otherLists.map(([id, list], index) => `${index + 1}. ${list.name}`).join('\n') +
+        `\n\n번호를 입력하세요 (1-${otherLists.length}):`
+    );
+
+    if (!result) return;
+
+    const index = parseInt(result) - 1;
+    if (isNaN(index) || index < 0 || index >= otherLists.length) {
+        showNotification('잘못된 번호입니다');
+        return;
+    }
+
+    const targetListId = otherLists[index][0];
+    const targetListName = otherLists[index][1].name;
+
+    // Move items
+    const sourceList = lists[currentListId];
+    const movedItems = [];
+
+    sourceList.items = sourceList.items.filter(item => {
+        if (selectedIds.includes(item.id)) {
+            item.listId = targetListId;
+            movedItems.push(item);
+            return false;
+        }
+        return true;
+    });
+
+    lists[targetListId].items.push(...movedItems);
+    await chrome.storage.sync.set({ lists });
+
+    document.getElementById('listSelectAll').checked = false;
+    await loadContent();
+    showNotification(`${movedItems.length}개 항목을 "${targetListName}"(으)로 이동했습니다`);
+}
+
+// Batch copy list items (copy as markdown links)
+async function batchCopyListItems() {
+    const container = document.getElementById('listItems');
+    const checkedBoxes = container.querySelectorAll('.item-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+
+    if (selectedIds.length === 0) return;
+
+    const { lists, settings } = await chrome.storage.sync.get(['lists', 'settings']);
+    const list = lists[currentListId];
+    if (!list) return;
+
+    const selectedItems = list.items.filter(item => selectedIds.includes(item.id));
+
+    // Generate markdown for selected items
+    const itemTemplate = settings?.markdownItemTemplate || '{{number}}. [{{title}}]({{url}}){{#selectedText}} - "{{selectedText}}"{{/selectedText}}';
+
+    const markdownItems = selectedItems.map((item, index) => {
+        let itemStr = itemTemplate;
+        itemStr = itemStr.replace(/\{\{number\}\}/g, (index + 1).toString());
+        itemStr = itemStr.replace(/\{\{title\}\}/g, item.title);
+        itemStr = itemStr.replace(/\{\{url\}\}/g, item.url);
+
+        if (item.selectedText && item.selectedText.trim()) {
+            itemStr = itemStr.replace(/\{\{#selectedText\}\}(.*?)\{\{\/selectedText\}\}/g, (match, content) => {
+                return content.replace(/\{\{selectedText\}\}/g, item.selectedText);
+            });
+        } else {
+            itemStr = itemStr.replace(/\{\{#selectedText\}\}.*?\{\{\/selectedText\}\}/g, '');
+        }
+
+        return itemStr;
+    }).join('\n');
+
+    await navigator.clipboard.writeText(markdownItems);
+    showNotification(`${selectedItems.length}개 항목을 클립보드에 복사했습니다`);
+}
+
+// Batch add items from history to current list
+async function batchAddToList(historyType) {
+    const containerId = historyType === 'visit' ? 'visitItems' : 'copyItems';
+    const container = document.getElementById(containerId);
+    const checkedBoxes = container.querySelectorAll('.item-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.dataset.id);
+
+    if (selectedIds.length === 0) return;
+
+    const storageKey = historyType === 'visit' ? 'visitHistory' : 'copyHistory';
+    const { [storageKey]: history, lists } = await chrome.storage.sync.get([storageKey, 'lists']);
+
+    if (!history || !lists) return;
+
+    const selectedItems = history.filter(item => selectedIds.includes(item.id));
+
+    let addedCount = 0;
+    let duplicateCount = 0;
+    const duplicateListNames = new Set();
+
+    for (const item of selectedItems) {
+        // Check for duplicates across ALL lists
+        let isDuplicate = false;
+
+        for (const [listId, list] of Object.entries(lists)) {
+            if (list.items && list.items.some(i => i.url === item.url)) {
+                isDuplicate = true;
+                duplicateListNames.add(list.name);
+                break;
+            }
+        }
+
+        if (isDuplicate) {
+            duplicateCount++;
+            continue;
+        }
+
+        const newItem = {
+            id: Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9),
+            title: item.title,
+            url: item.url,
+            selectedText: item.selectedText || '',
+            timestamp: Date.now(),
+            listId: currentListId
+        };
+
+        lists[currentListId].items.push(newItem);
+        addedCount++;
+    }
+
+    await chrome.storage.sync.set({ lists });
+
+    // Reset selection
+    const selectAllId = `${historyType}SelectAll`;
+    document.getElementById(selectAllId).checked = false;
+    container.querySelectorAll('.item-checkbox:checked').forEach(cb => cb.checked = false);
+    updateBatchButtons(historyType);
+
+    // Show notification
+    const listName = lists[currentListId].name;
+    if (addedCount > 0 && duplicateCount > 0) {
+        showNotification(`✓ ${addedCount}개 추가됨, ⚠️ ${duplicateCount}개 중복`);
+    } else if (addedCount > 0) {
+        showNotification(`✓ "${listName}"에 ${addedCount}개 항목을 추가했습니다`);
+    } else {
+        showNotification(`⚠️ 모든 항목이 이미 존재합니다`);
+    }
+
+    if (currentTab === 'list') {
+        await loadContent();
+    }
 }
