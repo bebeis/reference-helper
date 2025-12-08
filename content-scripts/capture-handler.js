@@ -7,6 +7,9 @@
     let lastCopyTime = 0;
     let isInternalCopy = false;  // Flag for internal operations
 
+    // Sensitive data detector is loaded from utils/sensitive-data-detector.js via manifest.json
+    // Uses global isSensitiveData() function
+
     // Listen for internal copy operations
     document.addEventListener('ref-helper-internal-copy', () => {
         isInternalCopy = true;
@@ -48,6 +51,17 @@
 
         const copiedText = window.getSelection().toString().trim();
         if (!copiedText) return;
+
+        // Check if text contains sensitive information
+        if (settings.filterSensitiveData !== false && isSensitiveData(copiedText)) {
+            // Don't save sensitive data to copy history
+            console.log('[Reference Helper] Sensitive data detected, not saving to copy history');
+            // Optionally show a subtle notification (can be enabled in settings)
+            if (settings.notifySensitiveDataFiltered) {
+                showToast('🔒 민감 정보는 복사 이력에 저장되지 않습니다', 2000);
+            }
+            return;
+        }
 
         // Avoid duplicates in quick succession
         const now = Date.now();

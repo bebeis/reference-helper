@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Reference Helper",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "블로그 글 작성 시 참고 자료를 효율적으로 관리하고 자동 삽입하는 도구",
     "permissions": [
         "storage",
@@ -21,6 +21,7 @@
             "js": [
                 "utils/dom-helpers.js",
                 "utils/url-helpers.js",
+                "utils/sensitive-data-detector.js",
                 "content-scripts/capture-handler.js",
                 "content-scripts/visit-tracker.js"
             ],

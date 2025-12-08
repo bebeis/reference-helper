@@ -16,6 +16,7 @@ function setupEventListeners() {
     });
     document.getElementById('importFileInput').addEventListener('change', importData);
     document.getElementById('clearDataBtn').addEventListener('click', clearData);
+    document.getElementById('clearCopyHistoryBtn').addEventListener('click', clearCopyHistory);
 }
 
 // Load settings from storage
@@ -28,8 +29,10 @@ async function loadSettings() {
         markdownItemTemplate: '{{number}}. [{{title}}]({{url}}){{#selectedText}} - "{{selectedText}}"{{/selectedText}}',
         htmlItemTemplate: '<li><a href="{{url}}">{{title}}</a>{{#selectedText}} - "{{selectedText}}"{{/selectedText}}</li>',
         autoNumbering: true,
-        trackCopy: true,
+        trackCopy: false,  // Changed to false for security
         trackVisit: true,
+        filterSensitiveData: true,
+        notifySensitiveDataFiltered: false,
         showBlogPopup: false,
         autoOpenPopup: true,
         excludedDomains: [],
@@ -42,6 +45,8 @@ async function loadSettings() {
     // Populate form
     document.getElementById('trackCopy').checked = currentSettings.trackCopy;
     document.getElementById('trackVisit').checked = currentSettings.trackVisit;
+    document.getElementById('filterSensitiveData').checked = currentSettings.filterSensitiveData !== false;  // Default true
+    document.getElementById('notifySensitiveDataFiltered').checked = currentSettings.notifySensitiveDataFiltered || false;
     // showBlogPopup removed from UI
     document.getElementById('autoOpenPopup').checked = currentSettings.autoOpenPopup;
     document.getElementById('autoNumbering').checked = currentSettings.autoNumbering;
@@ -58,6 +63,8 @@ async function saveSettings() {
     const settings = {
         trackCopy: document.getElementById('trackCopy').checked,
         trackVisit: document.getElementById('trackVisit').checked,
+        filterSensitiveData: document.getElementById('filterSensitiveData').checked,
+        notifySensitiveDataFiltered: document.getElementById('notifySensitiveDataFiltered').checked,
         showBlogPopup: false, // Always false as feature is removed
         autoOpenPopup: document.getElementById('autoOpenPopup').checked,
         autoNumbering: document.getElementById('autoNumbering').checked,
@@ -96,8 +103,10 @@ async function resetSettings() {
         markdownItemTemplate: '{{number}}. [{{title}}]({{url}}){{#selectedText}} - "{{selectedText}}"{{/selectedText}}',
         htmlItemTemplate: '<li><a href="{{url}}">{{title}}</a>{{#selectedText}} - "{{selectedText}}"{{/selectedText}}</li>',
         autoNumbering: true,
-        trackCopy: true,
+        trackCopy: false,  // Changed to false for security
         trackVisit: true,
+        filterSensitiveData: true,
+        notifySensitiveDataFiltered: false,
         showBlogPopup: false,
         autoOpenPopup: true,
         excludedDomains: [],
@@ -181,9 +190,15 @@ async function clearData() {
         markdownItemTemplate: '{{number}}. [{{title}}]({{url}}){{#selectedText}} - "{{selectedText}}"{{/selectedText}}',
         htmlItemTemplate: '<li><a href="{{url}}">{{title}}</a>{{#selectedText}} - "{{selectedText}}"{{/selectedText}}</li>',
         autoNumbering: true,
-        trackCopy: true,
+        trackCopy: false,  // Changed to false for security
         trackVisit: true,
-        showBlogPopup: true
+        filterSensitiveData: true,
+        notifySensitiveDataFiltered: false,
+        showBlogPopup: false,
+        autoOpenPopup: true,
+        excludedDomains: [],
+        visitHistoryDays: 14,
+        defaultListId: 'default'
     };
 
     await chrome.storage.sync.set({
@@ -203,6 +218,16 @@ async function clearData() {
 
     await loadSettings();
     showToast('✓ 모든 데이터가 삭제되었습니다');
+}
+
+// Clear copy history only
+async function clearCopyHistory() {
+    if (!confirm('복사 이력을 모두 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+        return;
+    }
+
+    await chrome.storage.sync.set({ copyHistory: [] });
+    showToast('✓ 복사 이력이 삭제되었습니다');
 }
 
 // Show toast notification
